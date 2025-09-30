@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Publications</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; color: #374151; }
+
+        /* Header */
+        .header { background: white; border-bottom: 1px solid #e5e7eb; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .logo { width: 40px; height: 40px; background: #10b981; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; }
+        .header-title h1 { font-size: 20px; font-weight: 600; color: #111827; }
+        .header-title p { font-size: 14px; color: #6b7280; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .user-toggle { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .toggle-switch { width: 48px; height: 24px; background: #10b981; border-radius: 12px; position: relative; cursor: pointer; }
+        .toggle-switch::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; right: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        /* Main Content */
+        .main-content { padding: 24px; }
+        .page-header { margin-bottom: 32px; }
+        .page-header h2 { font-size: 28px; font-weight: 600; color: #111827; margin-bottom: 8px; }
+        .page-header p { color: #6b7280; }
+        .page-header-right { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+        .admin-badge { background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .logout-btn { color: #6b7280; text-decoration: none; font-size: 14px; }
+
+        /* Navigation Tabs */
+        .nav-tabs { display: flex; gap: 16px; margin-bottom: 32px; }
+        .nav-tab { display: flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; font-weight: 500; text-decoration: none; color: #6b7280; background: transparent; border: none; cursor: pointer; }
+        .nav-tab.active { background: #10b981; color: white; }
+        .nav-tab:not(.active):hover { background: #f3f4f6; color: #111827; }
+
+        /* Publications Section */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .section-title h3 { font-size: 20px; font-weight: 600; color: #111827; }
+        .section-title p { font-size: 14px; color: #6b7280; margin-top: 4px; }
+        .add-btn { display: flex; align-items: center; gap: 8px; background: #10b981; color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 500; border: none; cursor: pointer; }
+        .add-btn:hover { background: #059669; }
+
+        /* Publication Cards */
+        .publications-list { display: flex; flex-direction: column; gap: 24px; }
+        .publication-card { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; display: flex; justify-content: space-between; }
+        .publication-content { flex: 1; }
+        .publication-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .publication-title { font-size: 18px; font-weight: 600; color: #111827; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .status-badge.annonce { background: #fef3c7; color: #92400e; }
+        .status-badge.evenement { background: #dbeafe; color: #1e40af; }
+        .publication-meta { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; font-size: 14px; color: #6b7280; }
+        .meta-item { display: flex; align-items: center; gap: 4px; }
+        .publication-description { color: #6b7280; line-height: 1.5; margin-bottom: 16px; }
+        .publication-actions { display: flex; gap: 16px; }
+        .action-btn { display: flex; align-items: center; gap: 4px; color: #6b7280; text-decoration: none; font-size: 14px; background: none; border: none; cursor: pointer; }
+        .action-btn:hover { color: #111827; }
+        .action-btn.delete { color: #dc2626; }
+        .action-btn.delete:hover { color: #991b1b; }
+        .publication-image { margin-left: 24px; }
+        .publication-image img { width: 96px; height: 64px; object-fit: cover; border-radius: 8px; }
+        .tags { display: flex; gap: 8px; }
+        .tag { color: #2563eb; font-size: 14px; }
+
+        /* Form Flottant */
+        .floating-form-container { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
+        .floating-form { background:white; border-radius:8px; padding:24px; width:90%; max-width:500px; position:relative; }
+        .floating-form button.close-btn { position:absolute; top:12px; right:12px; border:none; background:none; font-size:18px; cursor:pointer; }
+        .form-group { display:flex; flex-direction:column; margin-bottom:12px; }
+        .form-label { font-size:14px; font-weight:500; color:#374151; margin-bottom:4px; }
+        .form-input, .form-select, .form-textarea { padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:14px; color:#374151; }
+        .form-textarea { resize: vertical; min-height:80px; }
+        .btn-secondary { padding:8px 16px; border:1px solid #d1d5db; background:white; color:#374151; border-radius:6px; font-weight:500; cursor:pointer; }
+        .btn-primary { padding:8px 16px; background:#10b981; color:white; border:none; border-radius:6px; font-weight:500; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo"><span class="glyphicon glyphicon-cog"></span></div>
+            <div class="header-title">
+                <h1>Administration</h1>
+                <p>Association Excellence & Développement</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-toggle">
+                <span><span class="glyphicon glyphicon-user"></span> Visiteur</span>
+                <div class="toggle-switch"></div>
+                <span><span class="glyphicon glyphicon-cog"></span> <strong>Admin</strong></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h2>Tableau de Bord Administrateur</h2>
+            <p>Bienvenue, Administrateur Principal. Gérez le contenu de votre association.</p>
+            <div class="page-header-right">
+                <span class="admin-badge">Administrateur</span>
+                <a href="dex.html" class="logout-btn">Déconnexion</a>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab" onclick="location.href='index.html'">
+                <span class="glyphicon glyphicon-stats"></span> Vue d'ensemble
+            </button>
+            <button class="nav-tab active" onclick="location.href='publication.html'">
+                <span class="glyphicon glyphicon-file"></span> Publications
+            </button>
+            <button class="nav-tab" onclick="location.href='historique.html'">
+                <span class="glyphicon glyphicon-time"></span> Historique
+            </button>
+            <button class="nav-tab" onclick="location.href='media.html'"> 
+                <span class="glyphicon glyphicon-picture"></span> Médias
+            </button>
+        </nav>
+
+        <!-- Publications Section -->
+        <section>
+            <div class="section-header">
+                <div class="section-title">
+                    <h3>Gestion des Publications</h3>
+                    <p>4 publications au total</p>
+                </div>
+                <button class="add-btn" onclick="openNewForm()">
+                    <span class="glyphicon glyphicon-plus"></span> Nouvelle Publication
+                </button>
+            </div>
+
+            <div class="publications-list">
+                <!-- Publication 1 -->
+                <article class="publication-card" data-title="Lancement du Programme de Mentorat 2025" data-type="Annonce" data-description="Nous sommes fiers d'annoncer le lancement de notre nouveau programme de mentorat qui connectera nos anciens bénéficiaires avec les nouveaux candidats. Ce programme vise à créer un réseau de soutien durable.">
+                    <div class="publication-content">
+                        <div class="publication-header">
+                            <h4 class="publication-title">Lancement du Programme de Mentorat 2025</h4>
+                            <span class="status-badge annonce">Annonce</span>
+                        </div>
+                        <div class="publication-meta">
+                            <div class="meta-item"><span class="glyphicon glyphicon-calendar"></span> <span>15/01/2025</span></div>
+                            <div class="meta-item"><span class="glyphicon glyphicon-user"></span> <span>Direction Générale</span></div>
+                            <div class="meta-item"><span class="glyphicon glyphicon-tag"></span> 
+                                <div class="tags"><span class="tag">#mentorat</span><span class="tag">#programme</span></div>
+                            </div>
+                        </div>
+                        <p class="publication-description">Nous sommes fiers d'annoncer le lancement de notre nouveau programme de mentorat qui connectera nos anciens bénéficiaires avec les nouveaux candidats. Ce programme vise à créer un réseau de soutien durable.</p>
+                        <div class="publication-actions">
+                            <button class="action-btn" onclick="openEditForm(this)"> <span class="glyphicon glyphicon-edit"></span> Modifier </button>
+                            <button class="action-btn delete"> <span class="glyphicon glyphicon-trash"></span> Supprimer </button>
+                            <button class="action-btn"> <span class="glyphicon glyphicon-eye-open"></span> Prévisualiser </button>
+                        </div>
+                    </div>
+                    <div class="publication-image">
+                        <img src="https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=150&h=100&fit=crop" alt="Programme de Mentorat">
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <!-- Formulaire Nouvelle Publication -->
+    <div id="newForm" class="floating-form-container">
+        <div class="floating-form">
+            <button class="close-btn" onclick="closeNewForm()"><span class="glyphicon glyphicon-remove"></span></button>
+            <h3>Nouvelle Publication</h3>
+            <form>
+                <div class="form-group">
+                    <label class="form-label">Titre</label>
+                    <input type="text" class="form-input" placeholder="Titre de la publication">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select class="form-select">
+                        <option>Annonce</option>
+                        <option>Événement</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" placeholder="Description de la publication..."></textarea>
+                </div>
+                <div style="text-align:right;">
+                    <button type="button" class="btn-secondary" onclick="closeNewForm()">Annuler</button>
+                    <button type="submit" class="btn-primary">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Formulaire Modifier Publication -->
+    <div id="editForm" class="floating-form-container">
+        <div class="floating-form">
+            <button class="close-btn" onclick="closeEditForm()"><span class="glyphicon glyphicon-remove"></span></button>
+            <h3>Modifier Publication</h3>
+            <form id="editPublicationForm">
+                <div class="form-group">
+                    <label class="form-label">Titre</label>
+                    <input type="text" id="editTitle" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select id="editType" class="form-select">
+                        <option>Annonce</option>
+                        <option>Événement</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="editDescription" class="form-textarea"></textarea>
+                </div>
+                <div style="text-align:right;">
+                    <button type="button" class="btn-secondary" onclick="closeEditForm()">Annuler</button>
+                    <button type="submit" class="btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openNewForm() {
+            document.getElementById('newForm').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeNewForm() {
+            document.getElementById('newForm').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function openEditForm(btn) {
+            const card = btn.closest('.publication-card');
+            document.getElementById('editTitle').value = card.dataset.title;
+            document.getElementById('editType').value = card.dataset.type;
+            document.getElementById('editDescription').value = card.dataset.description;
+            document.getElementById('editForm').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeEditForm() {
+            document.getElementById('editForm').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    </script>
+</body>
+</html>
